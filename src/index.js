@@ -10,6 +10,7 @@ function XoxGameComponent(){
   const [mark,setMark]=useState("X");
   const [message,setMessage]=useState("");
   const [isGameFinish,setIsGameFinish]=useState(false);
+  const [isMultiplayer, setIsMultiplayer] = useState(false);
 
   useEffect(()=>{
     newGame();
@@ -28,33 +29,46 @@ function XoxGameComponent(){
     ]);
     setIsGameFinish(false);
     setMark("X");
-    setMessage("Move Mark: "+mark)
+    setMessage(isMultiplayer ? ("Move Mark: X" ): ("Move Mark: " + mark));
+    
   }
 
-  const markGame= (index)=>{
-    if(!isGameFinish){
-    const newGames=[...games];
-    if(newGames[index]==""){
-      newGames[index]=mark;
-      setGames(newGames);
-      let e=isMoveFinish(newGames);
-      if(e){
-        setMessage("The Game Is Tied");
-        setIsGameFinish(true);
-        return;
-      } 
-
-      let r=isGameOver(newGames);
-      if(r){
-        setMessage("The Game Won By " + mark);
-        setIsGameFinish(true);
-        return;
+  const markGame = (index) => {
+    if (!isGameFinish) {
+      const newGames = [...games];
+      if (newGames[index] === "") {
+        newGames[index] = mark;
+        setGames(newGames);
+  
+        let e = isMoveFinish(newGames);
+        if (e) {
+          setMessage("The Game Is Tied");
+          setIsGameFinish(true);
+          return;
+        }
+  
+        let r = isGameOver(newGames);
+        if (r) {
+          setMessage("The Game Won By " + mark);
+          setIsGameFinish(true);
+          return;
+        }
+  
+        if (!isMultiplayer) {
+          setMark("O");
+          setMessage("Move Mark: O");
+          setTimeout(() => {
+            computerMove(newGames);
+            setMark("X");
+            setMessage("Move Mark: X");
+          }, 1000);
+        } else {
+          setMark(mark === "X" ? "O" : "X");
+          setMessage("Move Mark: " + (mark === "X" ? "O" : "X"));
+        }
       }
-
-    mark=="X"?setMark("O"):setMark("X");
-    setMessage("Move Mark: "+(mark=="X"?"O":"X"))
-   }
-  }}
+    }
+  }
   const isGameOver=(newGames)=>{
     if(newGames[0] !="" && newGames[0]===newGames[1] && newGames[1]===newGames[2]){
       return true;
@@ -91,28 +105,43 @@ function isMoveFinish(newGames){
   }
   return true
 }
-
-  return(
-    <>
+const computerMove = (newGames) => {
+  const number = getRandomNumber(0, 8);
+  if (newGames[number] === "") {
+    newGames[number] = mark === "X" ? "O" : "X";
+    setGames(newGames);
+    setMark(mark === "X" ? "O" : "X");
+    setMessage("Move Mark: " + (mark === "X" ? "O" : "X"));
+  } else {
+    computerMove(newGames);
+  }
+}
+function getRandomNumber(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+return (
+  <>
     <div className='container text-center'>
       <h1>XOX Game</h1>
       <h2 className='alert alert-warning'>
-      {message}
+        {message}
       </h2>
-      <button className='btn btn-outline-primary w-100'
-      onClick={newGame}>New Game</button>
+      <div className="mb-2">
+        <button className='btn btn-outline-primary me-2' onClick={() => { setIsMultiplayer(true); newGame(); }}>Multiplayer Game</button>
+        <button className='btn btn-outline-primary' onClick={() => { setIsMultiplayer(false); newGame(); }}>Single Player Game</button>
+      </div>
       <div className='row mt-2'>
-        {games.map((game,index)=>(
+        {games.map((game, index) => (
           <div key={index}
-          className='col-md-4 box'
-          onClick={()=>markGame(index)}>
+            className='col-md-4 box'
+            onClick={() => markGame(index)}>
             {game}
           </div>
         ))}
       </div>
     </div>
-    </>
-  )
+  </>
+)
 }
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
