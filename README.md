@@ -4,7 +4,7 @@
 ## This project is for React
 
 * This project is an XOX game project that I designed to practice React. There are options to play single player against the computer or multiplayer.
-* 
+  
 # Technologies Used
 * React.js
 
